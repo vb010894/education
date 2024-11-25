@@ -1,0 +1,18 @@
+vaadin:
+  launch-browser: true
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:./education/product-service
+    username: test
+    password: 1234
+  jpa:
+    database-platform: H2
+    hibernate:
+      ddl-auto: update
+  application:
+    name: sv-task
+server:
+  servlet:
+    context-path: /product-service
+  port: 8082
