@@ -17,19 +17,28 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinServletRequest;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.security.PermitAll;
+import jakarta.servlet.ServletException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 /// # Страница продуктов\
 /// **url = http://localhost:8082/product-service/all**
-@Route("/all")
+@Route("all")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@PermitAll
 public class ProductionView extends VerticalLayout {
 
     ApplicationContext context;
@@ -51,7 +60,24 @@ public class ProductionView extends VerticalLayout {
         this.setSizeFull();
         HorizontalLayout plantWrapper = new HorizontalLayout();
         plantWrapper.setWidthFull();
-        plantWrapper.add(plants, addPlant);
+        HorizontalLayout space = new HorizontalLayout();
+        space.setWidthFull();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Text username;
+        if(authentication.getPrincipal() instanceof User u) {
+            username = new Text(u.getUsername());
+        } else {
+            username = new Text(authentication.getPrincipal().toString());
+        }
+        Button logoutButton = new Button(VaadinIcon.SIGN_OUT.create());
+        logoutButton.addClickListener(e -> {
+            try {
+                VaadinServletRequest.getCurrent().logout();
+            } catch (ServletException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        plantWrapper.add(plants, addPlant, space, new HorizontalLayout(username, logoutButton));
         productions.setSizeFull();
         productions.addColumn(ProductionEntity::getName).setHeader("Наименование");
         productions.addColumn(this.getPriceRender()).setHeader("Цены");

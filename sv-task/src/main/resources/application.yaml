@@ -15,4 +15,4 @@ spring:
 server:
   servlet:
     context-path: /product-service
-  port: 8082
+  port: 8081
